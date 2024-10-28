@@ -1,0 +1,15 @@
+<html>
+	<head></head>
+	<body></body>
+
+	<script>
+		let ws;
+
+		// wss: websocket secure
+		// ws: websocket
+		const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+		ws = new WebSocket(`${protocol}://${window.location.host}`);
+
+		ws.onmessage = (event) => console.log(event.data);
+	</script>
+</html>
