@@ -11,21 +11,21 @@ server.listen(3000, function () {
     console.log('Server listening on port 3000');
 });
 
+// Begin Websocket
+const WebSocketServer = require('ws').Server;
+const wss = new WebSocketServer({ server });
+
 // On Signal Interrupt
 process.on('SIGINT', () => {
     //Close all websocket connections
-    wss.clients.forEach((client) => {
+    wss.clients.forEach(function each(client) {
         client.close();
     });
     // Close the server and the db
     server.close(() => {
-        shutDownDb();
+        shutdownDB();
     })
 });
-
-// Begin Websocket
-const WebSocketServer = require('ws').Server;
-const wss = new WebSocketServer({ server });
 
 // Web Socket listener
 wss.on('connection', function (ws) {
@@ -39,10 +39,9 @@ wss.on('connection', function (ws) {
         ws.send('Welcome!');
     }
 
-    db.run(`
-        INSERT INTO visitors VALUES (count, time)
-        VALUES (${numClients}, datetime('now'))
-    `);
+    db.run(`INSERT INTO visitors (count, time)
+    VALUES (${numClients}, datetime('now'))`);
+
 
     ws.on('close', function close() {
         wss.broadcast(`Current Visitors: ${numClients}`);
@@ -67,22 +66,20 @@ const db = new sqlite.Database(':memory:');
 
 // Initialize the db before anything so that we cnanot query or write tot ables that do not exist
 db.serialize(() => {
-    db.run(`
-        CREATE TABLE visitors (
-            count INTEGER,
-            time TEXT
-        )
-    `);
+    db.run(`CREATE TABLE visitors (
+      count INTEGER,
+      time TEXT
+      )`);
 });
 
 function getCounts() {
     db.each("SELECT * FROM visitors", (err, row) => {
         console.log(row);
-    })
+    });
 }
 
-function shutDownDb() {
+function shutdownDB() {
     getCounts();
-    console.log('Shutting down db');
+    console.log('shutting down DB');
     db.close();
 }
